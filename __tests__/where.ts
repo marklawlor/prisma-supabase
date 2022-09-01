@@ -1,25 +1,102 @@
-import { PostgrestQueryBuilder } from "@supabase/postgrest-js";
-import PostgrestFilterBuilder from "./utils/filter-builder";
-import { appendWhere } from "../src/where";
+import { createClient } from "../src/client";
 
-jest.mock("./utils/filter-builder"); // I don't know how to auto mock named exports...
+let searchParams: URLSearchParams;
 
-const mockedFilterBuilder = jest.mocked(PostgrestFilterBuilder);
-
-beforeEach(() => {
-  mockedFilterBuilder.mockClear();
+const client = createClient("http://fake.url", "key", {
+  async fetch(url) {
+    searchParams = new URL(url.toString()).searchParams;
+    return {
+      ok: true,
+      headers: new Map(),
+      text: () => Promise.resolve(""),
+    } as unknown as Response;
+  },
 });
 
-const filterBuilder = () => {
-  return new PostgrestFilterBuilder<Record<string, unknown>>(
-    new PostgrestQueryBuilder("http://fake.url")
-  );
-};
+it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#filtering", () => {
+  client.user.findMany({
+    where: {
+      email: {
+        endsWith: "prisma.io",
+      },
+      posts: {
+        some: {
+          published: true,
+        },
+      },
+    },
+  });
 
-it("works", () => {
-  appendWhere(filterBuilder(), {});
+  expect([...searchParams.entries()]).toEqual([
+    ["select", "*"],
+    ["email", "like.%22*prisma.io%22"],
+    ["posts", "cs.published"],
+  ]);
+});
 
-  const instance = mockedFilterBuilder.mock.instances[0];
+it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#combining-operators", () => {
+  client.user.findMany({
+    where: {
+      OR: [
+        { email: { endsWith: "prisma.io" } },
+        { email: { endsWith: "gmail.com" } },
+      ],
+      NOT: {
+        email: {
+          endsWith: "hotmail.com",
+        },
+      },
+    },
+  });
 
-  expect(instance.filter).toHaveBeenCalledWith("test", "eq", "value");
+  expect([...searchParams.entries()]).toEqual([
+    ["select", "*"],
+    ["or", "(email.like.%22*prisma.io%22,email.like.%22*gmail.com%22)"],
+    ["email", "not.like.%22*hotmail.com%22"],
+  ]);
+});
+
+it.skip("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#combining-operators 1", () => {
+  // TODO: Not sure how to do some
+});
+
+it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#combining-operators 2", () => {
+  client.post.findMany({
+    where: {
+      author: {
+        email: {
+          contains: "prisma.io",
+        },
+      },
+    },
+  });
+
+  expect([...searchParams.entries()]).toEqual([
+    ["select", "*"],
+    ["author.email", "cs.%22prisma.io%22"],
+  ]);
+});
+
+it.skip("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#filter-on-scalar-lists--arrays", () => {
+  // TODO: Not sure how to do has
+});
+
+it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#case-insensitive-filtering", () => {
+  client.user.findMany({
+    where: {
+      email: {
+        endsWith: "prisma.io",
+        mode: "insensitive", // Default value: default
+      },
+      name: {
+        equals: "Archibald", // Default mode
+      },
+    },
+  });
+
+  expect([...searchParams.entries()]).toEqual([
+    ["select", "*"],
+    ["email", "ilike.%22*prisma.io%22"],
+    ["name", "eq.Archibald"],
+  ]);
 });

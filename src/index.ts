@@ -12,8 +12,16 @@ const client = createClient(
   }
 );
 
+client.supabase.from("test").select().or();
+
 void (async function () {
   const results = await client.user.findMany({
+    where: {
+      name: {
+        contains: "asdf",
+        equals: "asdfas",
+      },
+    },
     select: {
       name: true,
       posts: {

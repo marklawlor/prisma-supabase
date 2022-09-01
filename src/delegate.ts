@@ -10,20 +10,12 @@ export function createDelegate(supabase: SupabaseClient, tableName: string) {
   return {
     async findUnique(args: Record<string, unknown>) {
       let query = supabase.from(tableName).select(toSelectString(args));
-
-      if (typeof args.where === "object" && args.where) {
-        query = appendWhere(query, args.where);
-      }
-
+      query = appendWhere(query, args);
       return handleSupabaseResponse(await query.single());
     },
     async findMany(args: Record<string, unknown>) {
       let query = supabase.from(tableName).select(toSelectString(args));
-
-      if (typeof args.where === "object" && args.where) {
-        query = appendWhere(query, args.where);
-      }
-
+      query = appendWhere(query, args);
       return handleSupabaseResponse(await query.then());
     },
   };
@@ -32,6 +24,7 @@ export function createDelegate(supabase: SupabaseClient, tableName: string) {
 function handleSupabaseResponse({
   error,
   data,
+  ...rest
 }: PostgrestResponse<unknown> | PostgrestSingleResponse<unknown>) {
   if (error) {
     throw new Error(error.message);
