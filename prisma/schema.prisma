@@ -11,9 +11,12 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  name         String?
+  profileViews Int?
+  role         String?
+
   posts Post[]
 
   @@map("users")
@@ -23,9 +26,19 @@ model Post {
   id        Int     @id @default(autoincrement())
   title     String
   content   String?
+  likes     Int?
   published Boolean @default(false)
   author    User    @relation(fields: [authorId], references: [id])
   authorId  Int     @map("author_id")
 
   @@map("posts")
+}
+
+model TimePeriod {
+  year    Int
+  quarter Int
+  total   Decimal
+
+  @@id([year, quarter])
+  @@unique(fields: [year, quarter], name: "timePeriodId")
 }

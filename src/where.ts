@@ -44,14 +44,15 @@ function topLevel(
   valueA: unknown,
   options?: NestedOptions
 ): Array<[string, string]> {
-  let value = valueA;
+  const value = valueA;
 
   switch (typeof value) {
     case "boolean":
     case "number":
     case "bigint":
+      return [[keyA, `eq.${value}`]];
     case "string":
-      value = { eq: value };
+      return [[keyA, `eq.${escapeValue(value)}`]];
   }
 
   if (typeof value === "object") {

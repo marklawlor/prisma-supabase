@@ -32,6 +32,14 @@ void (async function () {
 
 ```
 
+## Differences from Prisma client
+
+In mapping Prisma to Supabase there are some minor differences
+
+### createMany
+
+createMany using `{ skipDuplicates: true }` is not supported
+
 ## Credits:
 
 https://github.com/TheoBr for the original idea
