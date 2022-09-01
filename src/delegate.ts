@@ -3,6 +3,7 @@ import {
   PostgrestSingleResponse,
   SupabaseClient,
 } from "@supabase/supabase-js";
+
 import { toSelectString } from "./select";
 import { appendWhere } from "./where";
 
@@ -24,7 +25,6 @@ export function createDelegate(supabase: SupabaseClient, tableName: string) {
 function handleSupabaseResponse({
   error,
   data,
-  ...rest
 }: PostgrestResponse<unknown> | PostgrestSingleResponse<unknown>) {
   if (error) {
     throw new Error(error.message);
