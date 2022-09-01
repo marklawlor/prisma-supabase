@@ -1,10 +1,6 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient, SupabaseClientOptions } from "@supabase/supabase-js";
 import type { PrismaClient } from "@prisma/client";
 import { createDelegate } from "./delegate";
-
-export type SupabaseClientOptions = NonNullable<
-  Parameters<typeof createClient>[2]
->;
 
 export interface SupabasePrismaOptions extends SupabaseClientOptions {
   tableMap?: Partial<Record<keyof PrismaClient, string>>;
@@ -14,7 +10,7 @@ export interface PrismaSupabaseClient extends PrismaClient {
   supabase: SupabaseClient;
 }
 
-export function createPrismaSupabaseClient(
+export function createClient(
   supabaseUrl: string,
   supabaseKey: string,
   { tableMap = {}, ...options }: SupabasePrismaOptions = {}

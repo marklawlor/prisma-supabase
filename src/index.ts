@@ -1,8 +1,8 @@
 import "dotenv/config";
 
-import { createPrismaSupabaseClient } from "./client";
+import { createClient } from "./client";
 
-const client = createPrismaSupabaseClient(
+const client = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_PUBLIC_ANON_KEY!,
   {
