@@ -1,4 +1,4 @@
-# Prisma-Superbase
+# Prisma-Supabase
 
 Experimental alternative client for Supabase that uses your Prisma types and syntax.
 
