@@ -1,10 +1,10 @@
-import { createClient } from "../src/client";
+import { createClient } from "../src";
 
-let searchParams: URLSearchParams;
+let searchParameters: URLSearchParams;
 
 const client = createClient("http://fake.url", "key", {
   async fetch(url) {
-    searchParams = new URL(url.toString()).searchParams;
+    searchParameters = new URL(url.toString()).searchParams;
     return {
       ok: true,
       headers: new Map(),
@@ -27,7 +27,7 @@ it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-s
     },
   });
 
-  expect([...searchParams.entries()]).toEqual([
+  expect([...searchParameters.entries()]).toEqual([
     ["select", "*"],
     ["email", "like.%22*prisma.io%22"],
     ["posts", "cs.published"],
@@ -49,7 +49,7 @@ it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-s
     },
   });
 
-  expect([...searchParams.entries()]).toEqual([
+  expect([...searchParameters.entries()]).toEqual([
     ["select", "*"],
     ["or", "(email.like.%22*prisma.io%22,email.like.%22*gmail.com%22)"],
     ["email", "not.like.%22*hotmail.com%22"],
@@ -71,7 +71,7 @@ it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-s
     },
   });
 
-  expect([...searchParams.entries()]).toEqual([
+  expect([...searchParameters.entries()]).toEqual([
     ["select", "*"],
     ["author.email", "cs.%22prisma.io%22"],
   ]);
@@ -94,7 +94,7 @@ it("https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-s
     },
   });
 
-  expect([...searchParams.entries()]).toEqual([
+  expect([...searchParameters.entries()]).toEqual([
     ["select", "*"],
     ["email", "ilike.%22*prisma.io%22"],
     ["name", "eq.Archibald"],

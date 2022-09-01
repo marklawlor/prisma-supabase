@@ -1,18 +1,20 @@
+/* eslint-disable unicorn/no-null */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Prisma } from "@prisma/client";
 import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
-
-type Object = Record<string | number | symbol, unknown>;
+import { AnyObject, isObject } from "./type-helpers";
 
 export function appendWhere(
   query: PostgrestFilterBuilder<Record<string, unknown>>,
-  obj: unknown
+  object: unknown
 ): PostgrestFilterBuilder<Record<string, unknown>> {
-  if (isWhere(obj)) {
+  if (isWhere(object)) {
     const url: URL = (query as any).url;
 
-    for (const entry of Object.entries(obj.where)) {
-      for (const param of topLevel(entry[0], entry[1])) {
-        url.searchParams.append(param[0], param[1]);
+    for (const entry of Object.entries(object.where)) {
+      for (const search of topLevel(entry[0], entry[1])) {
+        url.searchParams.append(search[0], search[1]);
       }
     }
   }
@@ -38,11 +40,11 @@ const filterMap: Record<string, FilterOperator> = {
 const conditionalKeys = Object.keys(filterMap);
 
 function topLevel(
-  key: string,
-  argValue: unknown,
+  keyA: string,
+  valueA: unknown,
   options?: NestedOptions
 ): Array<[string, string]> {
-  let value = argValue;
+  let value = valueA;
 
   switch (typeof value) {
     case "boolean":
@@ -53,7 +55,7 @@ function topLevel(
   }
 
   if (typeof value === "object") {
-    switch (key) {
+    switch (keyA) {
       case "OR":
         return [["or", nested(value, options)]];
       case "AND":
@@ -69,21 +71,21 @@ function topLevel(
 
       default:
         if (value === null) {
-          return [[key, "is.null"]];
+          return [[keyA, "is.null"]];
         } else if (isConditionalObject(value)) {
           const { mode, ...rest } = value;
 
           return Object.entries(rest).map((entry) => {
-            return [key, nested({ [entry[0]]: entry[1], mode }, options)];
+            return [keyA, nested({ [entry[0]]: entry[1], mode }, options)];
           });
         } else {
           return Object.entries(value).flatMap((entry) => {
-            return topLevel(`${key}.${entry[0]}`, entry[1]);
+            return topLevel(`${keyA}.${entry[0]}`, entry[1]);
           });
         }
     }
   } else {
-    throw new Error("Should not have reached here");
+    throw new TypeError("Should not have reached here");
   }
 }
 
@@ -91,8 +93,8 @@ interface NestedOptions {
   not?: boolean;
 }
 
-function nested(argValue: unknown, { not }: NestedOptions = {}): string {
-  let value = argValue;
+function nested(valueA: unknown, { not }: NestedOptions = {}): string {
+  let value = valueA;
   const prefix = not ? "not." : "";
 
   switch (typeof value) {
@@ -120,22 +122,16 @@ function nested(argValue: unknown, { not }: NestedOptions = {}): string {
           case "startsWith":
             parsedValue = escapeValue(`${entry[1]}*`);
             break;
-          case "startsWith":
-            parsedValue = escapeValue(`${entry[1]}*`);
-            break;
           case "endsWith":
             parsedValue = escapeValue(`*${entry[1]}`);
             break;
           default:
-            if (entry[1] === true) {
-              parsedValue = escapeValue(entry[0]);
-            } else {
-              parsedValue = escapeValue(entry[1]);
-            }
+            parsedValue =
+              entry[1] === true ? escapeValue(entry[0]) : escapeValue(entry[1]);
         }
 
         let operator: string = filterMap[entry[0]];
-        let modePrefix = mode === "insensitive" ? "i" : "";
+        const modePrefix = mode === "insensitive" ? "i" : "";
 
         switch (operator) {
           case "like":
@@ -176,31 +172,27 @@ function escapeValue(value: unknown): string {
   return (value as any).toString();
 }
 
-interface Conditional extends Object {
+interface Conditional extends AnyObject {
   [index: keyof typeof filterMap]: unknown;
   mode?: string;
 }
 
 function isWhere(
-  obj: unknown
-): obj is { where: Record<string, Prisma.Enumerable<unknown>> } {
+  object: unknown
+): object is { where: Record<string, Prisma.Enumerable<unknown>> } {
   return Boolean(
-    obj &&
-      typeof obj === "object" &&
-      typeof (obj as Record<string, unknown>).where === "object"
+    object &&
+      typeof object === "object" &&
+      typeof (object as Record<string, unknown>).where === "object"
   );
 }
 
-function isObject(obj: unknown): obj is Object {
-  return Boolean(typeof obj === "object" && obj);
-}
-
-function isConditionalObject(obj: unknown): obj is Conditional {
-  if (!isObject(obj)) {
+function isConditionalObject(object: unknown): object is Conditional {
+  if (!isObject(object)) {
     return false;
   }
 
-  const { mode, ...other } = obj;
+  const { mode, ...other } = object;
 
   return conditionalKeys.includes(Object.keys(other)[0]);
 }

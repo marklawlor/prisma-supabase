@@ -1,0 +1,19 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "ignorePaths": [
+    "node_modules/*",
+    "dist/*",
+    "**.js",
+    "**.snap",
+    "**LICENSE",
+    "**/package.json"
+  ],
+  "dictionaries": ["project"],
+  "dictionaryDefinitions": [
+    {
+      "name": "project",
+      "path": "./.cspell/project.txt"
+    }
+  ]
+}

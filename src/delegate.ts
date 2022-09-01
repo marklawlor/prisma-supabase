@@ -5,16 +5,17 @@ import {
 } from "@supabase/supabase-js";
 
 import { toSelectString } from "./select";
+import { AnyObject } from "./type-helpers";
 import { appendWhere } from "./where";
 
 export function createDelegate(supabase: SupabaseClient, tableName: string) {
   return {
-    async findUnique(args: Record<string, unknown>) {
+    async findUnique(args: AnyObject) {
       let query = supabase.from(tableName).select(toSelectString(args));
       query = appendWhere(query, args);
       return handleSupabaseResponse(await query.single());
     },
-    async findMany(args: Record<string, unknown>) {
+    async findMany(args: AnyObject) {
       let query = supabase.from(tableName).select(toSelectString(args));
       query = appendWhere(query, args);
       return handleSupabaseResponse(await query.then());

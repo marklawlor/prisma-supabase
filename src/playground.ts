@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/prefer-top-level-await */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 
 import { createClient } from "./index";
@@ -19,7 +21,7 @@ void (async function () {
     where: {
       name: {
         contains: "asdf",
-        equals: "asdfas",
+        equals: "asdf",
       },
     },
     select: {
@@ -32,5 +34,5 @@ void (async function () {
     },
   });
 
-  console.log(JSON.stringify(results, null, 2));
+  console.log(JSON.stringify(results, undefined, 2));
 })();
